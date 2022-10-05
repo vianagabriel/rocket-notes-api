@@ -1,6 +1,6 @@
 const AppError = require('../Utils/AppError');
 const sqliteConnection = require('../Database/sqlite');
-const { hash } = require = require('bcryptjs');
+const { hash, compare } = require = require('bcryptjs');
 
 class UsersController {
    async create(request, response) {
@@ -23,7 +23,7 @@ class UsersController {
    }
 
    async update(request, response) {
-      const { name, email } = request.body;
+      const { name, email, password, old_password } = request.body;
       const { id } = request.params;//Recuperando id passado na rota.
       const database = await sqliteConnection();
       const user = await database.get('SELECT * FROM users WHERE id = (?)',[id]);
@@ -43,15 +43,35 @@ class UsersController {
       //Se as informações passaram por todas as validações estão aqui está sendo atualizado o valor das variáveis.
       user.name = name;
       user.email = email;
+  
+      //Validando se a senha antiga foi informada.
+      if(password && !old_password){
+         throw new AppError('Você precisa informar a senha antiga para definir a nova!')
+      }
+
+      //Checando se a senha antiga é a mesma cadastrada no banco de dados.
+      if(password && old_password){
+         //Comparando as senhas.
+         const checkOldPassword = await compare(old_password, user.password);
+          
+         //Se a senha antiga não conferir irá cair nessa validação.
+         if(!checkOldPassword){
+            throw new AppError('A senha antiga não confere.');
+         }
+         
+         //Se as informações passaram por todas as validações então aqui vão ser atualizado os valores.
+         user.password = await hash(password, 8);
+      }
 
       //Aqui está sendo mandado para o banco de dados os valores já atualizados, assim concluindo a atualização.
       await database.run(`
         UPDATE users SET
         name = ?,
         email = ?,
+        password = ?,
         updated_at = ?
         WHERE id = ?`,
-        [user.name, user.email, new Date(), id]
+        [user.name, user.email, user.password, new Date(), id]
         );
 
         return response.json();
