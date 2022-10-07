@@ -1,6 +1,6 @@
 const AppError = require('../Utils/AppError');
 const sqliteConnection = require('../Database/sqlite');
-const { hash, compare } = require = require('bcryptjs');
+const { hash, compare } = require('bcryptjs');
 
 class UsersController {
    async create(request, response) {
@@ -41,8 +41,8 @@ class UsersController {
       }
 
       //Se as informações passaram por todas as validações estão aqui está sendo atualizado o valor das variáveis.
-      user.name = name;
-      user.email = email;
+      user.name = name ?? user.name;
+      user.email = email ?? user.email;
   
       //Validando se a senha antiga foi informada.
       if(password && !old_password){
@@ -69,9 +69,9 @@ class UsersController {
         name = ?,
         email = ?,
         password = ?,
-        updated_at = ?
+        updated_at = DATETIME('now')
         WHERE id = ?`,
-        [user.name, user.email, user.password, new Date(), id]
+        [user.name, user.email, user.password, id]
         );
 
         return response.json();
