@@ -1,3 +1,5 @@
+
+
 exports.up = knex => knex.schema.createTable('links', table =>{
   table.increments('id');
   table.text('url').notNullable();
@@ -7,5 +9,3 @@ exports.up = knex => knex.schema.createTable('links', table =>{
 });
 
 exports.down = knex => knex.schema.dropTable('links');
-
-

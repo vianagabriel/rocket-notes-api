@@ -7,9 +7,11 @@ const routes = require('./Routes');
 const app = express();
 const PORT = 3333;
 const migrationsRun = require('./Database/sqlite/migrations');
+const uploadConfig = require('./configs/upload');
 
 migrationsRun();
 app.use(express.json());
+app.use('/files', express.static(uploadConfig.UPLOADS_FOLDER))
 app.use(routes);
 
 
